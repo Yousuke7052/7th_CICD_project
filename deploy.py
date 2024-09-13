@@ -1,20 +1,15 @@
 import os
 import subprocess
 import sys
+import time
 
 def log(message):
     print(message)
-
-# def get_current_branch():
-#     """获取当前分支名"""
-#     branch_name = subprocess.check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD']).strip()
-#     return branch_name.decode('utf-8')
 
 def get_current_branch():
     """获取当前分支名"""
     try:
         branch_name = subprocess.check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD']).strip()
-        log('Current branch: %s' % branch_name.decode('utf-8'))
         return branch_name.decode('utf-8')
     except subprocess.CalledProcessError as e:
         log('Failed to get current branch: %s' % e)
@@ -22,10 +17,10 @@ def get_current_branch():
 
 def get_environment_variables(branch_name):
     """根据分支名获取环境变量"""
-    bucket_name_env = 'OSS_BUCKET_NAME_{}'.format(branch_name)
-    access_key_id_env = 'OSS_ACCESS_KEY_ID_{}'.format(branch_name)
-    secret_access_key_env = 'OSS_SECRET_ACCESS_KEY_{}'.format(branch_name)
-    endpoint_env = 'OSS_ENDPOINT_{}'.format(branch_name)
+    bucket_name_env = 'OSS_BUCKET_NAME_%s' % branch_name
+    access_key_id_env = 'OSS_ACCESS_KEY_ID_%s' % branch_name
+    secret_access_key_env = 'OSS_SECRET_ACCESS_KEY_%s' % branch_name
+    endpoint_env = 'OSS_ENDPOINT_%s' % branch_name
 
     bucket_name = os.getenv(bucket_name_env)
     access_key_id = os.getenv(access_key_id_env)
@@ -42,15 +37,22 @@ def get_environment_variables(branch_name):
 
 def check_for_new_commits():
     """检查是否有新的提交"""
-    try:
-        subprocess.check_call(["git", "pull"])
-        # 使用Popen和communicate来捕获输出
-        p = subprocess.Popen(["git", "log", "--oneline", "HEAD@{1}", "HEAD"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output, _ = p.communicate()
-        return output.strip() != ""
-    except subprocess.CalledProcessError as e:
-        log('Failed to check for new commits: %s' % e)
-        return False
+    max_retries = 3
+    delay = 5
+    for attempt in range(max_retries):
+        try:
+            subprocess.check_call(["git", "pull"])
+            # 使用Popen和communicate来捕获输出
+            p = subprocess.Popen(["git", "log", "--oneline", "HEAD@{1}", "HEAD"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            output, _ = p.communicate()
+            return output.strip() != ""
+        except subprocess.CalledProcessError as e:
+            if attempt < max_retries - 1:  # 如果不是最后一次尝试
+                log('Failed to check for new commits (Attempt %d): %s, Retrying in %d seconds...' % (attempt + 1, e, delay))
+                time.sleep(delay)
+            else:
+                log('Failed to check for new commits after %d attempts: %s' % (max_retries, e))
+                return False
 
 def upload_file_to_oss(local_file, destination_path, bucket_name, access_key_id, secret_access_key, endpoint):
     """上传单个文件到OSS"""
@@ -72,6 +74,10 @@ def upload_file_to_oss(local_file, destination_path, bucket_name, access_key_id,
 def main():
     # 获取当前分支名
     branch_name = get_current_branch()
+
+    if branch_name is None:
+        log("Failed to determine the current branch.")
+        return
 
     # 检查是否有新的提交
     if not check_for_new_commits():
