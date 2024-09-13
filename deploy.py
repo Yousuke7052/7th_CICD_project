@@ -54,17 +54,11 @@ def check_for_new_commits():
                 log('Failed to check for new commits after %d attempts: %s' % (max_retries, e))
                 return False
 
-def find_file_in_directory(filename, root_dir='.'):
-    """在指定目录及其子目录中查找文件"""
-    for dirpath, _, filenames in os.walk(root_dir):
-        if filename in filenames:
-            return os.path.join(dirpath, filename)
-    return None
-
 def upload_file_to_oss(local_file, destination_path, bucket_name, access_key_id, secret_access_key, endpoint):
     """上传单个文件到OSS"""
-    oss_url = 'oss://%s/%s' % (bucket_name, destination_path)
+    #oss_url = 'oss://%s/%s' % (bucket_name, destination_path)
     try:
+        oss_url = 'oss://%s/%s' % (bucket_name, destination_path)
         log('Uploading file %s to %s...' % (local_file, oss_url))
         # 使用ossutil上传文件
         subprocess.run([
@@ -104,20 +98,20 @@ def main():
         log("Missing required environment variables.")
         return
 
-    # 动态查找文件
+    # 明确指定本地文件路径和目标路径
     if branch_name == 'dev':
-        local_file = find_file_in_directory('dev.html')
+        local_file = 'dev.html'
         destination_path = 'dev.html'
     elif branch_name == 'prod':
-        local_file = find_file_in_directory('prod.html')
+        local_file = 'prod.html'
         destination_path = 'prod.html'
     else:
         log("Unsupported branch: %s" % branch_name)
         return
 
     # 检查本地文件是否存在
-    if local_file is None:
-        log("File does not exist: %s" % ('dev.html' if branch_name == 'dev' else 'prod.html'))
+    if not os.path.exists(local_file):
+        log("File does not exist at path: %s" % local_file)
         return
 
     # 上传文件到OSS
