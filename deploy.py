@@ -96,7 +96,7 @@ def handle_branch_logic():
     """处理与分支相关的逻辑"""
     # 获取当前分支名
     branch_name = get_current_branch()
-    log("目前的分支是: %s" % branch_name)
+    print("目前的分支是: %s" % branch_name)
 
     if branch_name is None:
         log('Failed to determine the current branch.')
@@ -111,13 +111,15 @@ def handle_branch_logic():
     if not check_for_new_commits():
         log('No new commits, skipping deployment.')
         return
-
+        
+    log('Current working directory: %s' % os.getcwd())
+    
     # 处理文件
     if branch_name == 'dev':
-        file_path = './dev.html'
+        file_path = 'dev.html'
         destination_path = 'dev.html'
     elif branch_name == 'prod':
-        file_path = './prod.html'
+        file_path = 'prod.html'
         destination_path = 'prod.html'
 
     handle_file(branch_name, file_path, destination_path)
