@@ -96,7 +96,7 @@ def handle_branch_logic():
     """处理与分支相关的逻辑"""
     # 获取当前分支名
     branch_name = get_current_branch()
-    print("目前的分支是: %s" % branch_name)
+    log("目前的分支是: %s" % branch_name)
 
     if branch_name is None:
         log('Failed to determine the current branch.')
@@ -128,4 +128,6 @@ def main():
     handle_branch_logic()
 
 if __name__ == '__main__':
+    # 确保当前目录为脚本所在的目录
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
     main()
