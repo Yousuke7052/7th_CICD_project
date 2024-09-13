@@ -138,4 +138,3 @@ if __name__ == '__main__':
     # 确保当前目录为脚本所在的目录
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
     main()
-    log()
