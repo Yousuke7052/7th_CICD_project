@@ -1,7 +1,7 @@
 import os
 import subprocess
 import sys
-print(f"**********Python version: {sys.version}**********")
+print("**********Python version: %s**********" % sys.version)
 
 def log(message):
     print(message)
