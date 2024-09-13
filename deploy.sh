@@ -19,8 +19,8 @@ fi
 pip install oss2
 
 # 设置OSS访问密钥
-export OSS_ACCESS_KEY_ID="your_access_key_id"
-export OSS_ACCESS_KEY_SECRET="your_access_key_secret"
+export OSS_ACCESS_KEY_ID="OSS_ACCESS_KEY_ID"
+export OSS_ACCESS_KEY_SECRET="OSS_SECRET_ACCESS_KEY"
 
 # 清除OSS存储桶中的旧文件
 ossutil rm -rf oss://$BUCKET_NAME/*
