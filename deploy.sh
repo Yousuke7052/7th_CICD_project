@@ -6,8 +6,10 @@ BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
 # 设置OSS存储桶名称
 if [ "$BRANCH_NAME" == "dev" ]; then
     BUCKET_NAME="dev-my-website"
+    HTML_FILE="dev.html"
 elif [ "$BRANCH_NAME" == "prod" ]; then
     BUCKET_NAME="prod-my-website"
+    HTML_FILE="prod.html"
 else
     echo "Unsupported branch, skipping deployment."
     exit 1
@@ -24,7 +26,6 @@ export OSS_ACCESS_KEY_SECRET="your_access_key_secret"
 ossutil rm -rf oss://$BUCKET_NAME/*
 
 # 上传文件到OSS存储桶
-ossutil cp -r ./ dist/
-ossutil cp -r ./ dist/ oss://$BUCKET_NAME/
+ossutil cp $HTML_FILE oss://$BUCKET_NAME/
 
 echo "Deployment to $BUCKET_NAME completed successfully."
