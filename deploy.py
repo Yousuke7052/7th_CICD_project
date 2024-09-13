@@ -99,13 +99,19 @@ def main():
 
     # 明确指定本地文件路径和目标路径
     if branch_name == 'dev':
-        local_files = [
-            ('dev.html', 'dev.html')
-        ]
+        local_file = 'dev.html'
+        destination_path = 'dev.html'
     elif branch_name == 'prod':
-        local_files = [
-            ('prod.html', 'prod.html')
-        ]
+        local_file = 'prod.html'
+        destination_path = 'prod.html'
+    # if branch_name == 'dev':
+    #     local_files = [
+    #         ('dev.html', 'dev.html')
+    #     ]
+    # elif branch_name == 'prod':
+    #     local_files = [
+    #         ('prod.html', 'prod.html')
+    #     ]
     else:
         log("Unsupported branch: %s" % branch_name)
         return
