@@ -1,9 +1,13 @@
 import os
 import subprocess
 
+def log(message):
+    print(message)
+
 def get_current_branch():
     """获取当前分支名"""
     branch_name = subprocess.check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD']).decode().strip()
+    print("**********已獲取分支**********")
     return branch_name
 
 def get_environment_variables(branch_name):
@@ -17,23 +21,39 @@ def get_environment_variables(branch_name):
     access_key_id = os.getenv(access_key_id_env)
     secret_access_key = os.getenv(secret_access_key_env)
     endpoint = os.getenv(endpoint_env)
+    print("**********已獲取環境變量**********")
 
     return bucket_name, access_key_id, secret_access_key, endpoint
 
-def fetch_deploy_script(branch_name):
-    """从main分支拉取最新的deploy.sh脚本"""
-    subprocess.run(["git", "fetch", "origin", "main"])
-    subprocess.run(["cp", "$(git show main:deploy.sh)", "deploy.sh.main"])
-    subprocess.run(["chmod", "+x", "deploy.sh.main"])
+def check_for_new_commits():
+    """检查是否有新的提交"""
+    try:
+        subprocess.run(["git", "pull"], check=True)
+        # 如果git pull没有输出任何新的commit信息，则认为没有新的提交
+        return subprocess.run(["git", "log", "--oneline", "HEAD@{1}", "HEAD"], capture_output=True, text=True).stdout.strip() != ""
+    except subprocess.CalledProcessError as e:
+        log(f"Failed to check for new commits: {e}")
+        return False
+    print("**********有經過檢查提交這個階段**********")
 
-def execute_deploy_script():
-    """执行从main分支拉取的deploy.sh脚本"""
-    subprocess.run(["./deploy.sh.main"])
+# def fetch_deploy_script(branch_name):
+#     """从main分支拉取最新的deploy.sh脚本"""
+#     subprocess.run(["git", "fetch", "origin", "main"])
+#     subprocess.run(["cp", "$(git show main:deploy.sh)", "deploy.sh.main"])
+#     subprocess.run(["chmod", "+x", "deploy.sh.main"])
+#     print("**********已拉取最新deploy.sh腳本**********")
+
+# def execute_deploy_script():
+#     """执行从main分支拉取的deploy.sh脚本"""
+#     subprocess.run(["./deploy.sh.main"])
+#     print("**********已執行deploy.sh**********")
 
 def upload_directory_to_oss(local_dir, destination_path, bucket_name, access_key_id, secret_access_key, endpoint):
     """上传目录到OSS"""
     oss_url = 'oss://%s/%s' % (bucket_name, destination_path)
     try:
+        log(f"Uploading directory {local_dir} to {oss_url}...")
+        # 使用ossutil上传文件
         subprocess.run([
             'ossutil', 'cp', local_dir,
             oss_url,
@@ -42,19 +62,26 @@ def upload_directory_to_oss(local_dir, destination_path, bucket_name, access_key
             '--access-key-secret', secret_access_key,
             '--endpoint', endpoint
         ], check=True)
-        print("Directory %s uploaded to OSS successfully." % local_dir)
+        log(f"Directory {local_dir} uploaded to OSS successfully.")
     except subprocess.CalledProcessError as e:
-        print("Failed to upload directory %s: %s" % (local_dir, e))
+        log(f"Failed to upload directory {local_dir}: {e}")
+    print("**********有經過上傳目錄這個階段**********")
 
 def main():
     # 获取当前分支名
     branch_name = get_current_branch()
+
+    # 检查是否有新的提交
+    if not check_for_new_commits():
+        log("No new commits, skipping deployment.")
+        return
 
     # 根据分支名确定环境变量
     bucket_name, access_key_id, secret_access_key, endpoint = get_environment_variables(branch_name)
 
     # 检查环境变量是否设置正确
     if not all([bucket_name, access_key_id, secret_access_key, endpoint]):
+        log("Missing required environment variables.")
         print("Missing required environment variables.")
         return
 
