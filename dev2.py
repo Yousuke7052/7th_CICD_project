@@ -28,7 +28,8 @@ def upload_file_to_oss(file_path, destination_path):
             oss_url,
             '--access-key-id', OSS_ACCESS_KEY_ID,
             '--access-key-secret', OSS_SECRET_ACCESS_KEY,
-            '--endpoint', OSS_ENDPOINT
+            '--endpoint', OSS_ENDPOINT,
+            '--force'
         ], check=True)
         print("File %s uploaded to OSS successfully." % file_path)
     except subprocess.CalledProcessError as e:
