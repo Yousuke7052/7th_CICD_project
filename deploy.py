@@ -56,10 +56,9 @@ def check_for_new_commits():
 
 def upload_file_to_oss(local_file, destination_path, bucket_name, access_key_id, secret_access_key, endpoint):
     """上传单个文件到OSS"""
-    #oss_url = 'oss://%s/%s' % (bucket_name, destination_path)
+    oss_url = f'oss://{bucket_name}/{destination_path}'
     try:
-        oss_url = 'oss://%s/%s' % (bucket_name, destination_path)
-        log('Uploading file %s to %s...' % (local_file, oss_url))
+        log(f'Uploading file {local_file} to {oss_url}...')
         # 使用ossutil上传文件
         subprocess.run([
             'ossutil', 'cp', local_file,
@@ -68,27 +67,19 @@ def upload_file_to_oss(local_file, destination_path, bucket_name, access_key_id,
             '--access-key-secret', secret_access_key,
             '--endpoint', endpoint
         ], check=True)
-        log('File %s uploaded to OSS successfully.' % local_file)
+        log(f'File {local_file} uploaded to OSS successfully.')
     except subprocess.CalledProcessError as e:
-        log('Failed to upload file %s: %s' % (local_file, e))
+        log(f'Failed to upload file {local_file}: {e}')
 
-def main():
-    # 获取当前分支名
-    branch_name = get_current_branch()
-
-    if branch_name is None:
-        log("Failed to determine the current branch.")
-        return
-
-    # 检查分支是否为 dev 或 prod
-    if branch_name not in ['dev', 'prod']:
-        log("Unsupported branch: %s" % branch_name)
-        return
-
-    # 检查是否有新的提交
-    if not check_for_new_commits():
-        log("No new commits, skipping deployment.")
-        return
+def handle_file(branch_name, local_filename, remote_filename):
+    """处理文件：查找文件、检查文件是否存在、上传文件"""
+    local_file = local_filename
+    destination_path = remote_filename
+    
+    # 检查本地文件是否存在
+    if not os.path.exists(local_file):
+        log("File does not exist at path: %s" % local_file)
+        return False
 
     # 根据分支名确定环境变量
     bucket_name, access_key_id, secret_access_key, endpoint = get_environment_variables(branch_name)
@@ -96,27 +87,38 @@ def main():
     # 检查环境变量是否设置正确
     if not all([bucket_name, access_key_id, secret_access_key, endpoint]):
         log("Missing required environment variables.")
-        return
-
-    # 明确指定本地文件路径和目标路径
-    if branch_name == 'dev':
-        local_file = 'dev.html'
-        destination_path = 'dev.html'
-    elif branch_name == 'prod':
-        local_file = 'prod.html'
-        destination_path = 'prod.html'
-    else:
-        log("Unsupported branch: %s" % branch_name)
-        return
-
-    # 检查本地文件是否存在
-    if not os.path.exists(local_file):
-        log("File does not exist at path: %s" % local_file)
-        return
+        return False
 
     # 上传文件到OSS
     upload_file_to_oss(local_file, destination_path, bucket_name, access_key_id, secret_access_key, endpoint)
+    return True
 
 if __name__ == '__main__':
     log("**********Python version: %s**********" % sys.version)
-    main()
+
+    # 获取当前分支名
+    branch_name = get_current_branch()
+    print("當前分支名為: %s" % branch_name)
+
+    if branch_name is None:
+        print("目前沒有分支提交")
+        log("Failed to determine the current branch.")
+    else:
+        # 检查分支是否为 dev 或 prod
+        if branch_name not in ['dev', 'prod']:
+            print("有分支提交")
+            log("Unsupported branch: %s" % branch_name)
+        else:
+            # 检查是否有新的提交
+            if not check_for_new_commits():
+                log("No new commits, skipping deployment.")
+            else:
+                # 处理文件
+                if branch_name == 'dev':
+                    local_filename = 'dev.html'
+                    remote_filename = 'dev.html'
+                elif branch_name == 'prod':
+                    local_filename = 'prod.html'
+                    remote_filename = 'prod.html'
+
+                handle_file(branch_name, local_filename, remote_filename)
