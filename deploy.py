@@ -11,9 +11,9 @@ def ensure_permissions(path, mode=0o644):
     """确保文件具有指定的权限"""
     try:
         os.chmod(path, mode)
-        log(f'Set permissions {oct(mode)} on {path}')
+        log('Set permissions %s on %s' % (oct(mode), path))
     except Exception as e:
-        log(f'Failed to set permissions on {path}: {str(e)}')
+        log('Failed to set permissions on %s: %s' % (path, str(e)))
 
 def get_current_branch():
     """获取当前分支名"""
