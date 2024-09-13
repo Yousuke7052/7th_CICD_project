@@ -11,4 +11,4 @@ if ! command -v python3 &> /dev/null; then
 fi
 
 # 运行Python脚本
-python3 script.py
+python3 /path/to/script.pyscript.py
