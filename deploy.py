@@ -1,5 +1,7 @@
 import os
 import subprocess
+import sys
+print(f"**********Python version: {sys.version}**********")
 
 def log(message):
     print(message)
@@ -32,7 +34,7 @@ def check_for_new_commits():
         # 如果git pull没有输出任何新的commit信息，则认为没有新的提交
         return subprocess.run(["git", "log", "--oneline", "HEAD@{1}", "HEAD"], capture_output=True, text=True).stdout.strip() != ""
     except subprocess.CalledProcessError as e:
-        log(f"Failed to check for new commits: {e}")
+        log('Failed to check for new commits: {}'.format(e))
         return False
     print("**********有經過檢查提交這個階段**********")
 
@@ -52,7 +54,7 @@ def upload_directory_to_oss(local_dir, destination_path, bucket_name, access_key
     """上传目录到OSS"""
     oss_url = 'oss://%s/%s' % (bucket_name, destination_path)
     try:
-        log(f"Uploading directory {local_dir} to {oss_url}...")
+        log('Uploading directory %s to %s...' % (local_dir, oss_url))
         # 使用ossutil上传文件
         subprocess.run([
             'ossutil', 'cp', local_dir,
@@ -62,9 +64,9 @@ def upload_directory_to_oss(local_dir, destination_path, bucket_name, access_key
             '--access-key-secret', secret_access_key,
             '--endpoint', endpoint
         ], check=True)
-        log(f"Directory {local_dir} uploaded to OSS successfully.")
+        log('Directory %s uploaded to OSS successfully.' % local_dir)
     except subprocess.CalledProcessError as e:
-        log(f"Failed to upload directory {local_dir}: {e}")
+        log('Failed to upload directory %s: %s' % (local_dir, e)) 
     print("**********有經過上傳目錄這個階段**********")
 
 def main():
