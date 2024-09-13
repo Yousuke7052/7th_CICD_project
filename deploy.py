@@ -17,10 +17,10 @@ def get_current_branch():
 
 def get_environment_variables(branch_name):
     """根据分支名获取环境变量"""
-    bucket_name_env = 'OSS_BUCKET_NAME_%s' % branch_name
-    access_key_id_env = 'OSS_ACCESS_KEY_ID_%s' % branch_name
-    secret_access_key_env = 'OSS_SECRET_ACCESS_KEY_%s' % branch_name
-    endpoint_env = 'OSS_ENDPOINT_%s' % branch_name
+    bucket_name_env = f'OSS_BUCKET_NAME_{branch_name}'
+    access_key_id_env = f'OSS_ACCESS_KEY_ID_{branch_name}'
+    secret_access_key_env = f'OSS_SECRET_ACCESS_KEY_{branch_name}'
+    endpoint_env = f'OSS_ENDPOINT_{branch_name}'
 
     bucket_name = os.getenv(bucket_name_env)
     access_key_id = os.getenv(access_key_id_env)
@@ -28,10 +28,10 @@ def get_environment_variables(branch_name):
     endpoint = os.getenv(endpoint_env)
 
     log('Environment Variables:')
-    log('  %s: %s' % (bucket_name_env, bucket_name))
-    log('  %s: %s' % (access_key_id_env, '<hidden>' if access_key_id else 'Not set'))
-    log('  %s: %s' % (secret_access_key_env, '<hidden>' if secret_access_key else 'Not set'))
-    log('  %s: %s' % (endpoint_env, endpoint))
+    log(f'  {bucket_name_env}: {bucket_name}')
+    log(f'  {access_key_id_env}: {"<hidden>" if access_key_id else "Not set"}')
+    log(f'  {secret_access_key_env}: {"<hidden>" if secret_access_key else "Not set"}')
+    log(f'  {endpoint_env}: {endpoint}')
 
     return bucket_name, access_key_id, secret_access_key, endpoint
 
@@ -48,10 +48,10 @@ def check_for_new_commits():
             return output.strip() != b''
         except subprocess.CalledProcessError as e:
             if attempt < max_retries - 1:  # 如果不是最后一次尝试
-                log('Failed to check for new commits (Attempt %d): %s, Retrying in %d seconds...' % (attempt + 1, e, delay))
+                log(f'Failed to check for new commits (Attempt {attempt + 1}): {e}, Retrying in {delay} seconds...')
                 time.sleep(delay)
             else:
-                log('Failed to check for new commits after %d attempts: %s' % (max_retries, e))
+                log(f'Failed to check for new commits after {max_retries} attempts: {e}')
                 return False
 
 def upload_file_to_oss(local_file, destination_path, bucket_name, access_key_id, secret_access_key, endpoint):
@@ -73,12 +73,12 @@ def upload_file_to_oss(local_file, destination_path, bucket_name, access_key_id,
 
 def handle_file(branch_name, local_filename, remote_filename):
     """处理文件：查找文件、检查文件是否存在、上传文件"""
-    local_file = local_filename
+    local_file = os.path.join(os.getcwd(), local_filename)  # 使用当前工作目录
     destination_path = remote_filename
     
     # 检查本地文件是否存在
     if not os.path.exists(local_file):
-        log("File does not exist at path: %s" % local_file)
+        log(f"File does not exist at path: {local_file}")
         return False
 
     # 根据分支名确定环境变量
@@ -93,32 +93,39 @@ def handle_file(branch_name, local_filename, remote_filename):
     upload_file_to_oss(local_file, destination_path, bucket_name, access_key_id, secret_access_key, endpoint)
     return True
 
-if __name__ == '__main__':
-    log("**********Python version: %s**********" % sys.version)
-
+def handle_branch_logic():
+    """处理与分支相关的逻辑"""
     # 获取当前分支名
     branch_name = get_current_branch()
-    print("當前分支名為: %s" % branch_name)
 
     if branch_name is None:
-        print("目前沒有分支提交")
         log("Failed to determine the current branch.")
-    else:
-        # 检查分支是否为 dev 或 prod
-        if branch_name not in ['dev', 'prod']:
-            print("有分支提交")
-            log("Unsupported branch: %s" % branch_name)
-        else:
-            # 检查是否有新的提交
-            if not check_for_new_commits():
-                log("No new commits, skipping deployment.")
-            else:
-                # 处理文件
-                if branch_name == 'dev':
-                    local_filename = 'dev.html'
-                    remote_filename = 'dev.html'
-                elif branch_name == 'prod':
-                    local_filename = 'prod.html'
-                    remote_filename = 'prod.html'
+        return
 
-                handle_file(branch_name, local_filename, remote_filename)
+    # 检查分支是否为 dev 或 prod
+    if branch_name not in ['dev', 'prod']:
+        log(f"Unsupported branch: {branch_name}")
+        return
+
+    # 检查是否有新的提交
+    if not check_for_new_commits():
+        log("No new commits, skipping deployment.")
+        return
+
+    # 处理文件
+    if branch_name == 'dev':
+        local_filename = 'dev.html'
+        remote_filename = 'dev.html'
+    elif branch_name == 'prod':
+        local_filename = 'prod.html'
+        remote_filename = 'prod.html'
+
+    handle_file(branch_name, local_filename, remote_filename)
+
+def main():
+    """主函数"""
+    log("**********Python version: %s**********" % sys.version)
+    handle_branch_logic()
+
+if __name__ == '__main__':
+    main()
