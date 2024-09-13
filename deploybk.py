@@ -45,7 +45,7 @@ def check_for_new_commits():
             # 使用Popen和communicate来捕获输出
             p = subprocess.Popen(["git", "log", "--oneline", "HEAD@{1}", "HEAD"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             output, _ = p.communicate()
-            return output.strip() != ''
+            return output.strip() != ""
         except subprocess.CalledProcessError as e:
             if attempt < max_retries - 1:  # 如果不是最后一次尝试
                 log('Failed to check for new commits (Attempt %d): %s, Retrying in %d seconds...' % (attempt + 1, e, delay))
@@ -77,11 +77,6 @@ def main():
 
     if branch_name is None:
         log("Failed to determine the current branch.")
-        return
-
-    # 检查分支是否为 dev 或 prod
-    if branch_name not in ['dev', 'prod']:
-        log("Unsupported branch: %s" % branch_name)
         return
 
     # 检查是否有新的提交
