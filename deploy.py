@@ -121,10 +121,10 @@ def handle_branch_logic():
     
     # 处理文件
     if branch_name == 'dev':
-        file_path = 'dev.html'
+        file_path = '/root/workspace/7th_CICD_project_ewIY/dev.html'
         destination_path = 'dev.html'
     elif branch_name == 'prod':
-        file_path = 'prod.html'
+        file_path = '/root/workspace/7th_CICD_project_ewIY/prod.html'
         destination_path = 'prod.html'
 
     handle_file(branch_name, file_path, destination_path)
