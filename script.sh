@@ -14,4 +14,4 @@ stages:
           echo "Checking environment variables..."
           env | grep OSS
           # 运行Python脚本
-          python /path/to/your/script.py
+          python script.py
