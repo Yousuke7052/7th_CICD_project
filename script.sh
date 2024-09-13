@@ -20,4 +20,4 @@ fi
 echo "Current working directory: $(pwd)"
 
 # 运行Python脚本
-python3 ./script.py
+python3 ./deploy.py
