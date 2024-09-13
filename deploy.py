@@ -45,7 +45,7 @@ def check_for_new_commits():
             # 使用Popen和communicate来捕获输出
             p = subprocess.Popen(["git", "log", "--oneline", "HEAD@{1}", "HEAD"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             output, _ = p.communicate()
-            return output.strip() != ''
+            return output.strip() != b''
         except subprocess.CalledProcessError as e:
             if attempt < max_retries - 1:  # 如果不是最后一次尝试
                 log('Failed to check for new commits (Attempt %d): %s, Retrying in %d seconds...' % (attempt + 1, e, delay))
@@ -104,21 +104,17 @@ def main():
     elif branch_name == 'prod':
         local_file = 'prod.html'
         destination_path = 'prod.html'
-    # if branch_name == 'dev':
-    #     local_files = [
-    #         ('dev.html', 'dev.html')
-    #     ]
-    # elif branch_name == 'prod':
-    #     local_files = [
-    #         ('prod.html', 'prod.html')
-    #     ]
     else:
         log("Unsupported branch: %s" % branch_name)
         return
 
+    # 检查本地文件是否存在
+    if not os.path.exists(local_file):
+        log("File does not exist at path: %s" % local_file)
+        return
+
     # 上传文件到OSS
-    for local_file, destination_path in local_files:
-        upload_file_to_oss(local_file, destination_path, bucket_name, access_key_id, secret_access_key, endpoint)
+    upload_file_to_oss(local_file, destination_path, bucket_name, access_key_id, secret_access_key, endpoint)
 
 if __name__ == '__main__':
     log("**********Python version: %s**********" % sys.version)
