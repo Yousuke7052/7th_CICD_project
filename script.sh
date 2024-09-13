@@ -18,4 +18,4 @@ fi
 
 # 运行Python脚本
 # 确保使用绝对路径或确保当前目录包含Python脚本
-python3 script.py
+python3 ./script.py
