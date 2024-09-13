@@ -117,7 +117,7 @@ def get_current_branch():
 
 def get_environment_variables(branch_name):
     """根据分支名获取环境变量"""
-    bucket_name_env = 'BUCKET_NAME_{}'.format(branch_name)
+    bucket_name_env = 'OSS_BUCKET_NAME_{}'.format(branch_name)
     access_key_id_env = 'OSS_ACCESS_KEY_ID_{}'.format(branch_name)
     secret_access_key_env = 'OSS_SECRET_ACCESS_KEY_{}'.format(branch_name)
     endpoint_env = 'OSS_ENDPOINT_{}'.format(branch_name)
