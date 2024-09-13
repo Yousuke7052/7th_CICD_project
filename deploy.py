@@ -2,6 +2,7 @@ import os
 import subprocess
 import sys
 import time
+import shutil
 
 def log(message):
     print(message)
@@ -71,13 +72,11 @@ def upload_file_to_oss(file_path, destination_path, bucket_name, access_key_id, 
     except subprocess.CalledProcessError as e:
         log('Failed to upload file %s: %s' % (file_path, str(e)))
 
-def handle_file(branch_name, file_path, destination_path):
-    """处理文件：查找文件、检查文件是否存在、上传文件"""
-    full_file_path = os.path.join(os.getcwd(), file_path)  # 使用当前工作目录
-    
+def handle_file(branch_name, target_file_path, destination_path):
+    """处理文件：检查文件是否存在、上传文件"""
     # 检查本地文件是否存在
-    if not os.path.exists(full_file_path):
-        log('File does not exist at path: %s' % full_file_path)
+    if not os.path.exists(target_file_path):
+        log('File does not exist at path: %s' % target_file_path)
         return False
 
     # 根据分支名确定环境变量
@@ -89,7 +88,7 @@ def handle_file(branch_name, file_path, destination_path):
         return False
 
     # 上传文件到OSS
-    upload_file_to_oss(full_file_path, destination_path, bucket_name, access_key_id, secret_access_key, endpoint)
+    upload_file_to_oss(target_file_path, destination_path, bucket_name, access_key_id, secret_access_key, endpoint)
     return True
 
 def handle_branch_logic():
@@ -107,6 +106,22 @@ def handle_branch_logic():
         log('Unsupported branch: %s' % branch_name)
         return
 
+    # 创建目标目录
+    target_dir = '/path/to/your/local/'
+    if not os.path.exists(target_dir):
+        os.makedirs(target_dir)
+
+    # 复制文件到目标目录
+    if branch_name == 'dev':
+        original_file_path = '/root/workspace/7th_CICD_project_ewIY/dev.html'
+        destination_path = 'dev.html'
+    elif branch_name == 'prod':
+        original_file_path = '/root/workspace/7th_CICD_project_ewIY/prod.html'
+        destination_path = 'prod.html'
+
+    target_file_path = os.path.join(target_dir, os.path.basename(original_file_path))
+    shutil.copy2(original_file_path, target_file_path)
+
     # 检查是否有新的提交
     if not check_for_new_commits():
         log('No new commits, skipping deployment.')
@@ -114,20 +129,8 @@ def handle_branch_logic():
         
     log('==========Current working directory: %s' % os.getcwd())
 
-    if os.path.exists(file_path):
-        log('File exists: %s' % file_path)
-    else:
-        log('File not found: %s' % file_path)
-    
     # 处理文件
-    if branch_name == 'dev':
-        file_path = '/root/workspace/7th_CICD_project_ewIY/dev.html'
-        destination_path = 'dev.html'
-    elif branch_name == 'prod':
-        file_path = '/root/workspace/7th_CICD_project_ewIY/prod.html'
-        destination_path = 'prod.html'
-
-    handle_file(branch_name, file_path, destination_path)
+    handle_file(branch_name, target_file_path, destination_path)
 
 def main():
     """主函数"""
