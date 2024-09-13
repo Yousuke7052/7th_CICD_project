@@ -108,13 +108,19 @@ def main():
         log("Unsupported branch: %s" % branch_name)
         return
 
-    # 检查本地文件是否存在
-    if not os.path.exists(local_file):
-        log("File does not exist at path: %s" % local_file)
-        return
+        # 检查文件是否存在
+    if os.path.exists(file_path):
+        upload_file_to_oss(local_file, destination_path)
+    else:
+        print("File %s does not exist." % local_file)
+   
+    # # 检查本地文件是否存在
+    # if not os.path.exists(local_file):
+    #     log("File does not exist at path: %s" % local_file)
+    #     return
 
-    # 上传文件到OSS
-    upload_file_to_oss(local_file, destination_path, bucket_name, access_key_id, secret_access_key, endpoint)
+    # # 上传文件到OSS
+    # upload_file_to_oss(local_file, destination_path, bucket_name, access_key_id, secret_access_key, endpoint)
 
 if __name__ == '__main__':
     log("**********Python version: %s**********" % sys.version)
