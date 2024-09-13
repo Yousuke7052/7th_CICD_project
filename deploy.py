@@ -5,10 +5,20 @@ import sys
 def log(message):
     print(message)
 
+# def get_current_branch():
+#     """获取当前分支名"""
+#     branch_name = subprocess.check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD']).strip()
+#     return branch_name.decode('utf-8')
+
 def get_current_branch():
     """获取当前分支名"""
-    branch_name = subprocess.check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD']).strip()
-    return branch_name.decode('utf-8')
+    try:
+        branch_name = subprocess.check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD']).strip()
+        log('Current branch: %s' % branch_name.decode('utf-8'))
+        return branch_name.decode('utf-8')
+    except subprocess.CalledProcessError as e:
+        log('Failed to get current branch: %s' % e)
+        return None
 
 def get_environment_variables(branch_name):
     """根据分支名获取环境变量"""
