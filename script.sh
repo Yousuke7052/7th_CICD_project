@@ -16,6 +16,8 @@ if ! command -v python3 &> /dev/null; then
     exit 1
 fi
 
+# 打印当前工作目录以确保在正确的位置执行
+echo "Current working directory: $(pwd)"
+
 # 运行Python脚本
-# 确保使用绝对路径或确保当前目录包含Python脚本
 python3 ./script.py
