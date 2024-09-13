@@ -34,8 +34,8 @@ def upload_file_to_oss(file_path, destination_path):
 
 if __name__ == '__main__':
     # 假设你要上传的是名为hello.txt的文件
-    file_path = 'hello.txt'  # 相对路径
-    destination_path = 'hello_py.txt'  # OSS中的目标路径
+    file_path = 'dev.html'  # 相对路径
+    destination_path = 'dev.html'  # OSS中的目标路径
     
     # 检查文件是否存在
     if os.path.exists(file_path):
