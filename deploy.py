@@ -112,7 +112,12 @@ def handle_branch_logic():
         log('No new commits, skipping deployment.')
         return
         
-    log('Current working directory: %s' % os.getcwd())
+    log('==========Current working directory: %s' % os.getcwd())
+
+    if os.path.exists(file_path):
+        log('File exists: %s' % file_path)
+    else:
+        log('File not found: %s' % file_path)
     
     # 处理文件
     if branch_name == 'dev':
@@ -133,3 +138,4 @@ if __name__ == '__main__':
     # 确保当前目录为脚本所在的目录
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
     main()
+    log()
