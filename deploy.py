@@ -54,31 +54,31 @@ def check_for_new_commits():
                 log(f'Failed to check for new commits after {max_retries} attempts: {e}')
                 return False
 
-def upload_file_to_oss(local_file, destination_path, bucket_name, access_key_id, secret_access_key, endpoint):
+def upload_file_to_oss(file_path, destination_path, bucket_name, access_key_id, secret_access_key, endpoint):
     """上传单个文件到OSS"""
     oss_url = f'oss://{bucket_name}/{destination_path}'
     try:
-        log(f'Uploading file {local_file} to {oss_url}...')
+        log(f'Uploading file {file_path} to {oss_url}...')
         # 使用ossutil上传文件
         subprocess.run([
-            'ossutil', 'cp', local_file,
+            'ossutil', 'cp', file_path,
             oss_url,
             '--access-key-id', access_key_id,
             '--access-key-secret', secret_access_key,
             '--endpoint', endpoint
         ], check=True)
-        log(f'File {local_file} uploaded to OSS successfully.')
+        log(f'File {file_path} uploaded to OSS successfully.')
     except subprocess.CalledProcessError as e:
-        log(f'Failed to upload file {local_file}: {e}')
+        log(f'Failed to upload file {file_path}: {e}')
 
 def handle_file(branch_name, local_filename, remote_filename):
     """处理文件：查找文件、检查文件是否存在、上传文件"""
-    local_file = os.path.join(os.getcwd(), local_filename)  # 使用当前工作目录
-    destination_path = remote_filename
+    file_path = os.path.join(os.getcwd(), file_path)  # 使用当前工作目录
+    destination_path = destination_path
     
     # 检查本地文件是否存在
-    if not os.path.exists(local_file):
-        log(f"File does not exist at path: {local_file}")
+    if not os.path.exists(file_path):
+        log(f"File does not exist at path: {file_path}")
         return False
 
     # 根据分支名确定环境变量
@@ -90,7 +90,7 @@ def handle_file(branch_name, local_filename, remote_filename):
         return False
 
     # 上传文件到OSS
-    upload_file_to_oss(local_file, destination_path, bucket_name, access_key_id, secret_access_key, endpoint)
+    upload_file_to_oss(file_path, destination_path, bucket_name, access_key_id, secret_access_key, endpoint)
     return True
 
 def handle_branch_logic():
@@ -114,13 +114,13 @@ def handle_branch_logic():
 
     # 处理文件
     if branch_name == 'dev':
-        local_filename = 'dev.html'
-        remote_filename = 'dev.html'
+        file_path = 'dev.html'
+        destination_path = 'dev.html'
     elif branch_name == 'prod':
-        local_filename = 'prod.html'
-        remote_filename = 'prod.html'
+        file_path = 'prod.html'
+        destination_path = 'prod.html'
 
-    handle_file(branch_name, local_filename, remote_filename)
+    handle_file(branch_name, file_path, destination_path)
 
 def main():
     """主函数"""
