@@ -7,6 +7,14 @@ import shutil
 def log(message):
     print(message)
 
+def ensure_permissions(path, mode=0o644):
+    """确保文件具有指定的权限"""
+    try:
+        os.chmod(path, mode)
+        log(f'Set permissions {oct(mode)} on {path}')
+    except Exception as e:
+        log(f'Failed to set permissions on {path}: {str(e)}')
+
 def get_current_branch():
     """获取当前分支名"""
     try:
@@ -111,6 +119,9 @@ def handle_branch_logic():
     if not os.path.exists(target_dir):
         os.makedirs(target_dir)
 
+    # 确保目标目录具有写权限
+    ensure_permissions(target_dir, mode=0o755)
+
     # 复制文件到目标目录
     if branch_name == 'dev':
         original_file_path = '/root/workspace/7th_CICD_project_ewIY/dev.html'
@@ -120,7 +131,30 @@ def handle_branch_logic():
         destination_path = 'prod.html'
 
     target_file_path = os.path.join(target_dir, os.path.basename(original_file_path))
-    shutil.copy2(original_file_path, target_file_path)
+
+    # 确保原始文件存在
+    if not os.path.exists(original_file_path):
+        log('Original file does not exist at path: %s' % original_file_path)
+        return
+
+    # 确保原始文件具有读权限
+    ensure_permissions(original_file_path, mode=0o644)
+
+    # 复制文件到目标目录
+    try:
+        shutil.copy2(original_file_path, target_file_path)
+        log('File copied to %s' % target_file_path)
+    except Exception as e:
+        log('Failed to copy file: %s' % str(e))
+        return
+
+    # 确保目标文件具有读写权限
+    ensure_permissions(target_file_path, mode=0o644)
+
+    # 检查目标文件是否存在
+    if not os.path.exists(target_file_path):
+        log('Target file does not exist at path: %s' % target_file_path)
+        return
 
     # 检查是否有新的提交
     if not check_for_new_commits():
