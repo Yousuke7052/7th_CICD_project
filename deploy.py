@@ -22,11 +22,11 @@ def get_environment_variables(branch_name):
     secret_access_key = os.getenv(secret_access_key_env)
     endpoint = os.getenv(endpoint_env)
 
-    log(f"Environment Variables:")
-    log(f"  {bucket_name_env}: {bucket_name}")
-    log(f"  {access_key_id_env}: {'<hidden>' if access_key_id else 'Not set'}")
-    log(f"  {secret_access_key_env}: {'<hidden>' if secret_access_key else 'Not set'}")
-    log(f"  {endpoint_env}: {endpoint}")
+    log('Environment Variables:')
+    log('  %s: %s' % (bucket_name_env, bucket_name))
+    log('  %s: %s' % (access_key_id_env, '<hidden>' if access_key_id else 'Not set'))
+    log('  %s: %s' % (secret_access_key_env, '<hidden>' if secret_access_key else 'Not set'))
+    log('  %s: %s' % (endpoint_env, endpoint))
 
     return bucket_name, access_key_id, secret_access_key, endpoint
 
