@@ -8,10 +8,10 @@ def get_current_branch():
 
 def get_environment_variables(branch_name):
     """根据分支名获取环境变量"""
-    bucket_name_env = f'BUCKET_NAME_{branch_name}'
-    access_key_id_env = f'OSS_ACCESS_KEY_ID_{branch_name}'
-    secret_access_key_env = f'OSS_SECRET_ACCESS_KEY_{branch_name}'
-    endpoint_env = f'OSS_ENDPOINT_{branch_name}'
+    bucket_name_env = 'BUCKET_NAME_%s' % branch_name
+    access_key_id_env = 'OSS_ACCESS_KEY_ID_%s' % branch_name
+    secret_access_key_env = 'OSS_SECRET_ACCESS_KEY_%s' % branch_name
+    endpoint_env = 'OSS_ENDPOINT_%s' % branch_name
 
     bucket_name = os.getenv(bucket_name_env)
     access_key_id = os.getenv(access_key_id_env)
@@ -20,9 +20,19 @@ def get_environment_variables(branch_name):
 
     return bucket_name, access_key_id, secret_access_key, endpoint
 
+def fetch_deploy_script(branch_name):
+    """从main分支拉取最新的deploy.sh脚本"""
+    subprocess.run(["git", "fetch", "origin", "main"])
+    subprocess.run(["cp", "$(git show main:deploy.sh)", "deploy.sh.main"])
+    subprocess.run(["chmod", "+x", "deploy.sh.main"])
+
+def execute_deploy_script():
+    """执行从main分支拉取的deploy.sh脚本"""
+    subprocess.run(["./deploy.sh.main"])
+
 def upload_directory_to_oss(local_dir, destination_path, bucket_name, access_key_id, secret_access_key, endpoint):
     """上传目录到OSS"""
-    oss_url = f'oss://{bucket_name}/{destination_path}'
+    oss_url = 'oss://%s/%s' % (bucket_name, destination_path)
     try:
         subprocess.run([
             'ossutil', 'cp', local_dir,
@@ -32,9 +42,9 @@ def upload_directory_to_oss(local_dir, destination_path, bucket_name, access_key
             '--access-key-secret', secret_access_key,
             '--endpoint', endpoint
         ], check=True)
-        print(f"Directory {local_dir} uploaded to OSS successfully.")
+        print("Directory %s uploaded to OSS successfully." % local_dir)
     except subprocess.CalledProcessError as e:
-        print(f"Failed to upload directory {local_dir}: {e}")
+        print("Failed to upload directory %s: %s" % (local_dir, e))
 
 def main():
     # 获取当前分支名
@@ -51,6 +61,12 @@ def main():
     # 本地目录路径和目标路径
     local_dir_path = 'project_2'
     destination_path = 'project_2'
+
+    # 从main分支拉取最新的deploy.sh脚本
+    fetch_deploy_script(branch_name)
+
+    # 执行从main分支拉取的deploy.sh脚本
+    execute_deploy_script()
 
     # 上传目录到OSS
     upload_directory_to_oss(local_dir_path, destination_path, bucket_name, access_key_id, secret_access_key, endpoint)
