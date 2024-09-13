@@ -5,10 +5,10 @@ echo "Checking environment variables..."
 env | grep OSS
 
 # 导出环境变量
-export OSS_BUCKET_NAME_DEV=${OSS_BUCKET_NAME_DEV:-""}
-export OSS_ACCESS_KEY_ID_DEV=${OSS_ACCESS_KEY_ID_DEV:-""}
-export OSS_SECRET_ACCESS_KEY_DEV=${OSS_SECRET_ACCESS_KEY_DEV:-""}
-export OSS_ENDPOINT_DEV=${OSS_ENDPOINT_DEV:-""}
+export OSS_BUCKET_NAME_DEV=${OSS_BUCKET_NAME_dev:-""}
+export OSS_ACCESS_KEY_ID_DEV=${OSS_ACCESS_KEY_ID_dev:-""}
+export OSS_SECRET_ACCESS_KEY_DEV=${OSS_SECRET_ACCESS_KEY_dev:-""}
+export OSS_ENDPOINT_DEV=${OSS_ENDPOINT_dev:-""}
 
 # 确保Python命令可用
 if ! command -v python3 &> /dev/null; then
