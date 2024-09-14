@@ -60,5 +60,5 @@ if __name__ == '__main__':
         else:
             print("File %s does not exist. / %s 未檢測到更新" % (file_path,file_path))
     else:
-        print(" %s 分支並未做提交" % branch_name)
+        print("當前提交的分支是 %s ，但沒有更新的代碼" % branch_name)
         sys.exit(0)  # 结束脚本执行
